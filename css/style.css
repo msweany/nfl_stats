@@ -1,0 +1,19 @@
+/* hide the container div until they suthenticate */
+.container {
+    display: none;
+}
+
+/* login form CSS */
+#loginForm {
+    display: flex;
+    justify-content: center;
+    padding-top: 50px;
+}
+
+#loginForm form {
+    width: 50%;
+}
+
+#loginForm input {
+    margin-bottom: 5px;
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Stats Collector</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="loginForm">
+        <form>
+            <div class="form-group">
+            <input type="text" class="form-control" id="user" placeholder="Username">
+            </div>
+            <div class="form-group">
+            <input type="password" class="form-control" id="pass" placeholder="Password">
+            </div>
+            <button id="login" type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+  <!-- Jquery and Bootstrap JS files -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script>
+    $(document).ready(function() {
+        console.log("ready!");
+        $("#login").click(function(){
+            var pass = $("#pass").val();
+            var user = $("#user").val();
+            $.post( "api/login.php", { "pass": pass, "user": user })
+            .done(function( data ) {
+                //console.log(data);
+                if(data.status=='100'){
+                    // set the local variable, then send to the main page
+                    localStorage.setItem('fozzil_nfl_TNHF3QMUXOBGGO9OR1IPY5O86',data.key);
+                    window.location.replace("index.html");
+                }
+            })
+        })
+    });
+  </script>
+<body>
+</html>
