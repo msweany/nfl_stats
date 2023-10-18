@@ -1,7 +1,7 @@
 // set variables used in the script
 var gamesUpdate = [];
-var gamesPerRun = 10;
-var gamesLeft = 10;
+var gamesPerRun = 100;
+var gamesLeft = 100;
 var gamesDelay = 2000; // 2000 milliseconds = 2 seconds
 // check to see if there are any games that need to be saved
 function getGames(count){

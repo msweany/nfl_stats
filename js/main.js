@@ -14,13 +14,13 @@ $(document).on("click", "#update_games", function(){
                     console.log(data);
                     // if status is 100, then we're good
                     if(data.status == '100'){
-                        // add the game to the logs
-                        $("#logs").append("<p>" + data.message + " : " + gamesLeft +" remain</p>");
+                        // add the game to the top of the logs
+                        $("#logs").prepend("<p>" + data.message + " : " + gamesLeft +" remain</p>");
                         getGames(gamesPerRun);
                         gamesLeft = gamesLeft - 1;
                     } else {
                         // break the foreach
-                        $("#logs").append("<p>" + data.message + "</p>");
+                        $("#logs").prepend("<p>" + data.message + "</p>");
                         return false;
                     }
                 }

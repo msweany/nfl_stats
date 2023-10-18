@@ -3,6 +3,9 @@ header('Content-Type: application/json');
 include 'connect.php';
 include 'functions.php';
 
+$debug = false;
+$failed_ts = false;
+
 # lets try to use curl to get the JSON our function
 $base_url = "https://ffl-stuff.azurewebsites.net/api/getGame?code=".getenv('FFL_API_KEY')."&game=";
 
@@ -12,6 +15,7 @@ $output = array();
 if(isset($_GET['game'])){
     $failed = false;
     $url = $base_url.$game_id;
+    if($debug){ print $url.'<br />'; }
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -22,11 +26,12 @@ if(isset($_GET['game'])){
     $data = json_decode($result, true);
     curl_close($ch);
 
-
     # now we have an array of games, let's format and print them out
-    /*print "<pre>";
-    print_r($data['game_info']);
-    print "</pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['game_info']);
+        print "</pre>";
+    }
     # save the game info to the database
     /*ArrayIN
     (
@@ -44,6 +49,7 @@ if(isset($_GET['game'])){
         [over_under] => 53.5 (under)
     )
     */
+
     # if $data['game_info']['roof'] has a ( in it, split and strip to only make it the first part 
     if(strpos($data['game_info']['roof'], '(') !== false){
         $data['game_info']['roof'] = explode('(', $data['game_info']['roof'])[0];
@@ -88,14 +94,17 @@ if(isset($_GET['game'])){
         over_under='".$data['game_info']['over_under']."'
     ";
     $mysqli->query($sql);
+    if($debug){ print "completed game_info<br />"; print $sql.'<br />';}
     # if the statement failed, print that
     if($mysqli->error){
         $failed = true;
         $output['error_sql'][] = $sql;
         $output['error_data']=$stat;
-        /*print "<pre>";
-        print_r($stat);
-        print "</pre>";*/
+        if($failed_ts){
+            print "<pre>";
+            print_r($stat);
+            print "</pre>";
+        }
     }
 
     # now we need to update the team info for roof and surface
@@ -104,19 +113,24 @@ if(isset($_GET['game'])){
         surface='".$data['game_info']['surface']."'
     WHERE team='".$data['game_info']['home_team']."'";
     $mysqli->query($sql);
+    if($debug){ print "completed teams update<br />"; print $sql.'<br />';}
     # if the statement failed, print that
     if($mysqli->error){
         $failed = true;
         $output['error_sql'][] = $sql;
         $output['error_data']=$stat;
-        /*print "<pre>";
-        print_r($stat);
-        print "</pre>";*/
+        if($failed_ts){
+            print "<pre>";
+            print_r($stat);
+            print "</pre>";
+        }
     }
-
-    /*print "<pre>";
-    print_r($data['away_stats']);
-    print "<pre>";*/
+    if($debug){ print "completed team update<br />";}
+    if($debug){
+        print "<pre>";
+        print_r($data['away_stats']);
+        print "<pre>";
+    }
     /* save game_stats to the database, here's the format of data
     Array
     (
@@ -149,6 +163,7 @@ if(isset($_GET['game'])){
     )
     */
     $data['away_stats']['team'] = teamMap($data['away_stats']['team']);
+    if($data['away_stats']['rush_yds'] == null){ $data['away_stats']['rush_yds'] = 0; }
     $sql = "INSERT INTO game_stats VALUES (null,
         '".$data['away_stats']['game_id']."',
         '".$data['away_stats']['team']."',
@@ -203,34 +218,27 @@ if(isset($_GET['game'])){
         fourth_down_att='".$data['away_stats']['fourth_down_att']."',
         time_of_possession='".$data['away_stats']['time_of_possession']."'";
     $mysqli->query($sql);
+    if($debug){ print "completed away_stats<br />"; print $sql.'<br />';}
     # if the statement failed, print that
     if($mysqli->error){
         $failed = true;
         $output['error_sql'][] = $sql;
         $output['error_data']=$stat;
-        /*print "<pre>";
-        print_r($stat);
-        print "</pre>";*/
+        if($failed_ts){
+            print "<pre>";
+            print_r($stat);
+            print "</pre>";
+        }
     }
-
-    /* removed 10-16-23 all added
-    # update teams to add the abbr
-    $sql = "UPDATE teams SET orig_abbr='".$data['away_stats']['team']."' WHERE team='".$data['game_info']['away_team']."'";
-    $mysqli->query($sql);
-    # if the statement failed, print that   
-    if($mysqli->error){
-        $failed = true;
-        $output['error_sql'][] = $sql;
-        $output['error_data']=$stat;
+    
+    if($debug){
         print "<pre>";
-        print_r($stat);
-        print "</pre>";
-    }*/
-
-    /*print "<pre>";
-    print_r($data['home_stats']);
-    print "<pre>";*/
+        print_r($data['home_stats']);
+        print "<pre>";
+    }
     $data['home_stats']['team'] = teamMap($data['home_stats']['team']);
+    # if rush_yds is null, give it a zero
+    if($data['home_stats']['rush_yds'] == null){ $data['home_stats']['rush_yds'] = 0; }
     $sql = "INSERT INTO game_stats VALUES (null,
         '".$data['home_stats']['game_id']."',
         '".$data['home_stats']['team']."',
@@ -284,34 +292,26 @@ if(isset($_GET['game'])){
         fourth_down_conv='".$data['home_stats']['fourth_down_conv']."',
         fourth_down_att='".$data['home_stats']['fourth_down_att']."',
         time_of_possession='".$data['home_stats']['time_of_possession']."'";
+    if($debug){ print "completed home_stats<br />"; print $sql.'<br />';}
     $mysqli->query($sql);
+    
     # if the statement failed, print that
     if($mysqli->error){
         $failed = true;
         $output['error_sql'][] = $sql;
         $output['error_data']=$stat;
-        /*print "<pre>";
-        print_r($stat);
-        print "</pre>";*/
+        if($failed_ts){
+            print "<pre>";
+            print_r($stat);
+            print "</pre>";
+        }
     }
 
-    /* removed 10-16-23 all added
-    # update teams to add the abbr
-    $sql = "UPDATE teams SET orig_abbr='".$data['home_stats']['team']."' WHERE team='".$data['game_info']['home_team']."'";
-    $mysqli->query($sql);
-    # if the statement failed, print that   
-    if($mysqli->error){
-        $failed = true;
-        $output['error_sql'][] = $sql;
-        $output['error_data']=$stat;
-        /*print "<pre>";
-        print_r($stat);
-        print "</pre>";
-    }*/
-
-    /*print "<pre>";
-    print_r($data['offense']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['offense']);
+        print "<pre>";
+    }
     /* save player_stats_offense to the database, here's the format of data
     [GoffJa00] => Array
             (
@@ -402,15 +402,19 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }
 
-    /*print "<pre>";
-    print_r($data['adv_passing']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['adv_passing']);
+        print "<pre>";
+    }
     /* save adv_passing to the database, here's the format of data
     /* save player_stats_offense to the database, here's the format of data
         [GoffJa00] => Array
@@ -514,15 +518,19 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }
 
-    /*print "<pre>";
-    print_r($data['adv_rushing']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['adv_rushing']);
+        print "<pre>";
+    }
     /* save adv_rushing to the database
     here's the data format
     [MontDa01] => Array
@@ -581,15 +589,19 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }
 
-    /*print "<pre>";
-    print_r($data['adv_receiving']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['adv_receiving']);
+        print "<pre>";
+    }
     /* save adv_receiving to the database
     here's the data format
     [StxxAm00] => Array
@@ -663,15 +675,19 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }
 
-    /*print "<pre>";
-    print_r($data['defense']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['defense']);
+        print "<pre>";
+    }
     /* save defense to the database
     here's the data format
     [BranBr00] => Array
@@ -736,16 +752,20 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }
 
 
-    /*print "<pre>";
-    print_r($data['adv_defense']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['adv_defense']);
+        print "<pre>";
+    }
     /* save adv_defense to the database
     here's the data format
     [AnzaAl00] => Array
@@ -849,15 +869,19 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }   
 
-    /*print "<pre>";
-    print_r($data['returns']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['returns']);
+        print "<pre>";
+    }
     /* save returns to the database
     here's the data format
     [RaymKa00] => Array
@@ -920,16 +944,20 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
 
     }
 
-    /*print "<pre>";
-    print_r($data['kicking']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['kicking']);
+        print "<pre>";
+    }
     /* save kicking to the database
     here's the data format
     [PattRi01] => Array
@@ -992,15 +1020,19 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
     }
 
-    /*print "<pre>";
-    print_r($data['snap_counts']);
-    print "<pre>";*/
+    if($debug){
+        print "<pre>";
+        print_r($data['snap_counts']);
+        print "<pre>";
+    }
     /* save snap_counts to the database
     here's the data format
     [SmitDo02] => Array
@@ -1055,9 +1087,11 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
         }
 
         # we also want to save to the player table
@@ -1088,9 +1122,11 @@ if(isset($_GET['game'])){
             $failed = true;
             $output['error_sql'][] = $sql;
             $output['error_data']=$stat;
-            /*print "<pre>";
-            print_r($stat);
-            print "</pre>";*/
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
             
         }
 
@@ -1103,9 +1139,11 @@ if(isset($_GET['game'])){
                 $failed = true;
                 $output['error_sql'][] = $sql;
                 $output['error_data']=$stat;
-                /*print "<pre>";
-                print_r($stat);
-                print "</pre>";*/
+                if($failed_ts){
+                    print "<pre>";
+                    print_r($stat);
+                    print "</pre>";
+                }
             }
         }
     }
