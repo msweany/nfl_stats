@@ -1,0 +1,1 @@
+https://api.myfantasyleague.com/2023/export?TYPE=injuries&W=&JSON=0

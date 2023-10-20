@@ -1,0 +1,1 @@
+https://api.myfantasyleague.com/2023/export?TYPE=playerProfile&P=14836&JSON=0

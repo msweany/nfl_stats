@@ -3,6 +3,10 @@
     display: none;
 }
 
+.loading {
+    display: none;
+}
+
 /* login form CSS */
 #loginForm {
     display: flex;
@@ -17,3 +21,9 @@
 #loginForm input {
     margin-bottom: 5px;
 }
+
+/* header */
+ .top-btns{
+    margin-top: 10px;
+    margin-left: 10px;
+ }
