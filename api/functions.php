@@ -1,5 +1,12 @@
 <?php
-
+########################## general functions ############################
+# function to clear a table
+function prepTable($table){
+    include 'connect.php';
+    $sql = "TRUNCATE TABLE $table";
+    $mysqli->query($sql);
+    $mysqli->close();
+}
 ##########################  Team functions #####################
 # get the abbr for a team, can receive name or abbreviation
 function teamMap($team){
@@ -185,4 +192,27 @@ function logMFLSync($player,$id,$score,$status){
     // /print $sql."<br />";
     $mysqli->query($sql);
     $mysqli->close();
+}
+# add info to the mfl_inuries table
+function mflInjury($item){
+    include 'connect.php';
+    $item['details'] = $mysqli->real_escape_string($item['details']);
+    $sql = "INSERT INTO mfl_injuries VALUES('".$item['id']."','".$item['status']."','".$item['details']."','".$item['exp_return']."','".time()."')";
+    //print $sql."<br />";
+    //print_r($item);
+    $mysqli->query($sql);
+    $mysqli->close();
+}
+
+################################### mfl player info #########################################
+function checkMflPlayers($limit){
+    include 'connect.php';
+    $sql = "SELECT * FROM players WHERE mfl_id > 5 AND birthdate = 0 LIMIT $limit"; 
+    //print $sql;
+    $result = $mysqli->query($sql);
+    while($row = $result->fetch_assoc()){
+        $players[] = $row['mfl_id'];
+    }
+    $mysqli->close();
+    return $players;
 }

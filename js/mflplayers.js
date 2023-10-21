@@ -16,7 +16,7 @@ function getMflPlayers(){
             console.log(data);
             if(data.status == 100){
                 if(data.data.length == 0){
-                    $("#games").html("No Players To Review");
+                    $("#logs").prepend("No Players To Review");
                 }else{
                     $("#games").html("<h2>Players To Review</h2>");
                     // create a table, then append to it
@@ -61,6 +61,7 @@ $(document).on("click", ".update_mfl_team", function(e) {
                 console.log(data);
                 if(data.status == 100){
                     $(".player_"+vals[0]).hide();
+                    $("#logs").prepend(vals[0]+' updated<br>');
                 }
             }
         }); 
@@ -77,6 +78,7 @@ $(document).on("click", ".update_mfl_team", function(e) {
                 console.log(data);
                 if(data.status == 100){
                     $(".player_"+vals[0]).hide();
+                    $("#logs").prepend(vals[0]+' updated<br>');
                 }
             }
         });

@@ -6,6 +6,9 @@
 .loading {
     display: none;
 }
+#update_games{
+    display: none;
+ }
 
 /* login form CSS */
 #loginForm {
@@ -27,3 +30,24 @@
     margin-top: 10px;
     margin-left: 10px;
  }
+
+
+ /* body */
+ #games{
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: auto;
+    padding: 10px;
+    margin-left: 20px;
+    margin-right: 10px;
+ }
+
+ #logs{
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: auto;
+    padding: 10px;
+    margin-right: 20px;
+
+ }
+ 

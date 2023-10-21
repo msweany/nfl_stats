@@ -1107,7 +1107,7 @@ if(isset($_GET['game'])){
             '".$stat['player_url']."',
             '".$stat['position']."',
             '".$stat['team']."',
-            '0','','','','',''
+            '0','',''
         ) ON DUPLICATE KEY UPDATE
             source_id='".$stat['player_id']."',
             name='".$stat['player']."',
