@@ -3,6 +3,19 @@ header('Content-Type: application/json');
 include 'connect.php';
 include 'functions.php';
 
+// I need to add this in to keep checking for changes after the game
+/*
+$currentDate = date('Y-m-d');
+$targetDate = strtotime('2024-01-07');
+$sevenDaysAgo = strtotime('-7 days', strtotime($currentDate));
+
+if ($targetDate >= $sevenDaysAgo) {
+    echo 'Today is 7 days or less older than 2024-01-07.';
+} else {
+    echo 'Today is more than 7 days older than 2024-01-07.';
+}
+*/
+
 if(isset($_GET['year'])){
     $year = $_GET['year'];
 }else{

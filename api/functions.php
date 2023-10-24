@@ -123,6 +123,7 @@ function mflMatch($player){
     if((in_array($player['position'],$positions))&& (!in_array($player['id'],$ignore))){
         // check to see if the player is already matched
         if(checkMflId($player['id'])){
+ 
             // update the player with thier new team
             saveMatchedMfl(0,$player);
             logMFLSync($player,0,0,'id matched');
@@ -189,7 +190,7 @@ function logMFLSync($player,$id,$score,$status){
     $player['name'] = $mysqli->real_escape_string($player['name']);
     $sql = "INSERT INTO mfl_log VALUES(null,'".$player['name']."','".$player['position']."','".$player['team']."','$id','".$player['id']."','$score','$status','".time()."') 
         ON DUPLICATE KEY UPDATE score = '$score', status = '$status', timestamp = '".time()."'";
-    // /print $sql."<br />";
+    //print $sql."<br />";
     $mysqli->query($sql);
     $mysqli->close();
 }

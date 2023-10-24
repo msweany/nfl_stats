@@ -16,7 +16,7 @@ function getMflPlayers(){
             console.log(data);
             if(data.status == 100){
                 if(data.data.length == 0){
-                    $("#logs").prepend("No Players To Review");
+                    $("#logs").prepend("No Players To Review<br />");
                 }else{
                     $("#games").html("<h2>Players To Review</h2>");
                     // create a table, then append to it
@@ -48,32 +48,18 @@ $(document).on("click", ".update_mfl_team", function(e) {
     console.log($(this).attr('vals'));
     // split the results by :
     var vals = $(this).attr('vals').split(':');
-    // if there are 2 valus, then it's just an ID update
-    if(vals.length == 2){
-        //updateMflPlayer(vals[0],vals[1]);  
-        // send a post to api/setPlayer.php
-        $.ajax({
-            url: "api/setPlayer.php",
-            type: "POST",
-            dataType: "json",
-            data: {id: vals[0], mfl_id: vals[1], action: 'mfl_id_update'},
-            success: function(data) {
-                console.log(data);
-                if(data.status == 100){
-                    $(".player_"+vals[0]).hide();
-                    $("#logs").prepend(vals[0]+' updated<br>');
-                }
-            }
-        }); 
-    }
     // 3 we update the team name also
     if(vals.length == 3){
-        //updateMflTeam(vals[0],vals[1],vals[2]);
         $.ajax({
             url: "api/setPlayer.php",
             type: "POST",
             dataType: "json",
-            data: {id: vals[0], mfl_id: vals[1], mfl_team: vals[2], action: 'mfl_team_update'},
+            data: {
+                id: vals[0], 
+                mfl_id: vals[1], 
+                mfl_team: vals[2], 
+                action: 'mfl_team_update'
+            },
             success: function(data) {
                 console.log(data);
                 if(data.status == 100){

@@ -1,7 +1,9 @@
 <?php
 header('Content-Type: application/json');
 include 'connect.php';
-$sql = "SELECT game_id,week,season,date,home,away FROM games WHERE game_status = 'final' AND game_synced = 0";
+# check if game_synced timestamp is 7 days or less ago
+
+$sql = "SELECT game_id,week,season,date,home,away FROM games WHERE game_status = 'final' AND (game_synced = 0 OR date >= CURDATE() - INTERVAL 7 DAY)";
 $result = $mysqli->query($sql);
 if ($result->num_rows > 0) {
     $games = array();

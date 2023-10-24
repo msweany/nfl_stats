@@ -358,6 +358,7 @@ if(isset($_GET['game'])){
             '".$stat['pass_att']."',
             '".$stat['pass_yds']."',
             '".$stat['pass_td']."',
+            '".$stat['pass_two_point']."',
             '".$stat['int']."',
             '".$stat['sack']."',
             '".$stat['sack_yds_lost']."',
@@ -366,11 +367,13 @@ if(isset($_GET['game'])){
             '".$stat['rush_att']."',
             '".$stat['rush_yds']."',
             '".$stat['rush_td']."',
+            '".$stat['rush_two_point']."',
             '".$stat['rush_att_longest']."',
             '".$stat['rec_tar']."',
             '".$stat['rec_rec']."',
             '".$stat['rec_yds']."',
             '".$stat['rec_td']."',
+            '".$stat['rec_two_point']."',
             '".$stat['rec_longest']."',
             '".$stat['fmb']."',
             '".$stat['fmb_lost']."'
@@ -379,6 +382,7 @@ if(isset($_GET['game'])){
             pass_att='".$stat['pass_att']."',
             pass_yds='".$stat['pass_yds']."',
             pass_td='".$stat['pass_td']."',
+            pass_two_point='".$stat['pass_two_point']."',
             interception='".$stat['int']."',
             sack='".$stat['sack']."',
             sack_yds_lost='".$stat['sack_yds_lost']."',
@@ -387,11 +391,13 @@ if(isset($_GET['game'])){
             rush_att='".$stat['rush_att']."',
             rush_yds='".$stat['rush_yds']."',
             rush_td='".$stat['rush_td']."',
+            rush_two_point='".$stat['rush_two_point']."',
             rush_att_longest='".$stat['rush_att_longest']."',
             rec_tar='".$stat['rec_tar']."',
             rec_rec='".$stat['rec_rec']."',
             rec_yds='".$stat['rec_yds']."',
             rec_td='".$stat['rec_td']."',
+            rec_two_point='".$stat['rec_two_point']."',
             rec_longest='".$stat['rec_longest']."',
             fmb='".$stat['fmb']."',
             fmb_lost='".$stat['fmb_lost']."'
@@ -1030,6 +1036,59 @@ if(isset($_GET['game'])){
 
     if($debug){
         print "<pre>";
+        print_r($data['adv_kicking']);
+        print "<pre>";
+    }
+    /* save kicking to the database
+    here's the data format
+    "GrupBl00": {
+            "game_id": "202310190nor",
+            "player_id": "GrupBl00",
+            "fg_made_50_plus": 0,
+            "fg_made_40_49": 1,
+            "fg_made_0_39": 2,
+            "fg_miss_50_plus": 1,
+            "fg_miss_40_49": 0,
+            "fg_miss_0_39": 0
+        },
+    */
+    foreach($data['adv_kicking'] as $stat){ 
+        $sql = "INSERT INTO player_stats_adv_kicking VALUES (null,
+            '".$stat['game_id']."',
+            '".$stat['player_id']."',
+            '".$stat['fg_made_50_plus']."',
+            '".$stat['fg_made_40_49']."',
+            '".$stat['fg_made_0_39']."',
+            '".$stat['fg_miss_50_plus']."',
+            '".$stat['fg_miss_40_49']."',
+            '".$stat['fg_miss_0_39']."'
+        ) ON DUPLICATE KEY UPDATE
+            fg_made_50_plus='".$stat['fg_made_50_plus']."',
+            fg_made_40_49='".$stat['fg_made_40_49']."',
+            fg_made_0_39='".$stat['fg_made_0_39']."',
+            fg_miss_50_plus='".$stat['fg_miss_50_plus']."',
+            fg_miss_40_49='".$stat['fg_miss_40_49']."',
+            fg_miss_0_39='".$stat['fg_miss_0_39']."'
+        ";
+        if($debug){
+            print $sql.' <br />';
+        }
+        $mysqli->query($sql);
+        # if the statement failed, print that   
+        if($mysqli->error){
+            $failed = true;
+            $output['error_sql'][] = $sql;
+            $output['error_data'] = $stat;
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
+        }
+    }
+
+    if($debug){
+        print "<pre>";
         print_r($data['snap_counts']);
         print "<pre>";
     }
@@ -1115,7 +1174,9 @@ if(isset($_GET['game'])){
             position='".$stat['position']."',
             team='".$stat['team']."'
         ";
-        $output['player_sql'][] = $stat;
+        if($debug){
+            print $sql.' <br />';
+        }
         $mysqli->query($sql);
         # if the statement failed, print that
         if($mysqli->error){
