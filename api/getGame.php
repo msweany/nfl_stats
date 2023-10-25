@@ -168,6 +168,11 @@ if(isset($_GET['game'])){
         '".$data['away_stats']['game_id']."',
         '".$data['away_stats']['team']."',
         '".$data['away_stats']['location']."',
+        '".$data['away_stats']['safeties']."',
+        '".$data['away_stats']['blocked_fg']."',
+        '".$data['away_stats']['blocked_punt']."',
+        '".$data['away_stats']['blocked_fg_td']."',
+        '".$data['away_stats']['blocked_punt_td']."',
         '".$data['away_stats']['first_downs']."',
         '".$data['away_stats']['rush_att']."',
         '".$data['away_stats']['rush_yds']."',
@@ -195,6 +200,11 @@ if(isset($_GET['game'])){
         team='".$data['away_stats']['team']."',
         location='".$data['away_stats']['location']."',
         first_downs='".$data['away_stats']['first_downs']."',
+        safeties='".$data['away_stats']['safeties']."',
+        blocked_fg='".$data['away_stats']['blocked_fg']."',
+        blocked_punt='".$data['away_stats']['blocked_punt']."',
+        blocked_fg_td='".$data['away_stats']['blocked_fg_td']."',
+        blocked_punt_td='".$data['away_stats']['blocked_punt_td']."',
         rush_att='".$data['away_stats']['rush_att']."',
         rush_yds='".$data['away_stats']['rush_yds']."',
         rush_tds='".$data['away_stats']['rush_tds']."',
@@ -244,6 +254,11 @@ if(isset($_GET['game'])){
         '".$data['home_stats']['team']."',
         '".$data['home_stats']['location']."',
         '".$data['home_stats']['first_downs']."',
+        '".$data['home_stats']['safeties']."',
+        '".$data['home_stats']['blocked_fg']."',
+        '".$data['home_stats']['blocked_punt']."',
+        '".$data['home_stats']['blocked_fg_td']."',
+        '".$data['home_stats']['blocked_punt_td']."',
         '".$data['home_stats']['rush_att']."',
         '".$data['home_stats']['rush_yds']."',
         '".$data['home_stats']['rush_tds']."',
@@ -270,6 +285,11 @@ if(isset($_GET['game'])){
         team='".$data['home_stats']['team']."',
         location='".$data['home_stats']['location']."',
         first_downs='".$data['home_stats']['first_downs']."',
+        safeties='".$data['home_stats']['safeties']."',
+        blocked_fg='".$data['home_stats']['blocked_fg']."',
+        blocked_punt='".$data['home_stats']['blocked_punt']."',
+        blocked_fg_td='".$data['home_stats']['blocked_fg_td']."',
+        blocked_punt_td='".$data['home_stats']['blocked_punt_td']."',
         rush_att='".$data['home_stats']['rush_att']."',
         rush_yds='".$data['home_stats']['rush_yds']."',
         rush_tds='".$data['home_stats']['rush_tds']."',
@@ -1087,6 +1107,83 @@ if(isset($_GET['game'])){
         }
     }
 
+    # finally get all the play_by_play for reference
+    if($debug){
+        print "<pre>";
+        print_r($data['play_by_play']);
+        print "<pre>";
+    }
+    /* save play_by_play to the database
+    here's the data format
+    [0] => Array
+    (
+        [game_id] => 202112180clt
+        [quarter] => 
+        [time] => 
+        [down] => 
+        [togo] => 
+        [location] => 
+        [away_team] => 
+        [home_team] => 
+        [detail] => Patriots won the coin toss and deferred, Colts to receive the opening kickoff.
+    )
+    */
+    foreach($data['play_by_play'] as $key => $stat){
+        # if quarter is null, change it to 0
+        if($stat['quarter'] == null){ $stat['quarter'] = 0; }
+        # if time is null, change it to 0:00
+        if($stat['time'] == null){ $stat['time'] = '0:00'; }
+        # if down is null, change it to 0
+        if($stat['down'] == null){ $stat['down'] = 0; }
+        # if togo is null, change it to 0
+        if($stat['togo'] == null){ $stat['togo'] = 0; }
+        # if location is null, change it to NA
+        if($stat['location'] == null){ $stat['location'] = 'NA'; }
+        # if away_team is null, change it to away_team
+        if($stat['away_team'] == null){ $stat['away_team'] = '0'; }
+        # if home_team is null, change it to home_team
+        if($stat['home_team'] == null){ $stat['home_team'] = '0'; }
+        # make detail safe for insert
+        $stat['detail'] = $mysqli->real_escape_string($stat['detail']);
+        $sql = "INSERT INTO play_by_play VALUES (null,
+            '".$stat['game_id']."',
+            '".$stat['quarter']."',
+            '".$stat['time']."',
+            '".$stat['down']."',
+            '".$stat['togo']."',
+            '".$stat['location']."',
+            '".$stat['away_team']."',
+            '".$stat['home_team']."',
+            '".$stat['detail']."'
+        ) ON DUPLICATE KEY UPDATE
+            game_id='".$stat['game_id']."',
+            quarter='".$stat['quarter']."',
+            time='".$stat['time']."',
+            down='".$stat['down']."',
+            togo='".$stat['togo']."',
+            location='".$stat['location']."',
+            away_team='".$stat['away_team']."',
+            home_team='".$stat['home_team']."',
+            detail='".$stat['detail']."'
+        ";
+        if($debug){
+            print $sql.' <br />';
+        }
+        $mysqli->query($sql);
+        # if the statement failed, print that
+        if($mysqli->error){
+            $failed = true;
+            $output['error_sql'][] = $sql;
+            $output['error_data']=$stat;
+            if($failed_ts){
+                print "<pre>";
+                print_r($stat);
+                print "</pre>";
+            }
+            
+        }
+    }
+
     if($debug){
         print "<pre>";
         print_r($data['snap_counts']);
@@ -1208,6 +1305,7 @@ if(isset($_GET['game'])){
             }
         }
     }
+
     if($failed){
         $output['status'] = 200;
         $output['message'] = 'Game '.$game_id.' failed';

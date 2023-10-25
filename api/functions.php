@@ -205,15 +205,43 @@ function mflInjury($item){
     $mysqli->close();
 }
 
-################################### mfl player info #########################################
-function checkMflPlayers($limit){
+################################### player info #########################################
+function checkPlayers($limit){
     include 'connect.php';
-    $sql = "SELECT * FROM players WHERE mfl_id > 5 AND birthdate = 0 LIMIT $limit"; 
+    $sql = "SELECT * FROM players WHERE birthdate = 0 AND position != 'DEF' LIMIT $limit"; 
     //print $sql;
     $result = $mysqli->query($sql);
     while($row = $result->fetch_assoc()){
-        $players[] = $row['mfl_id'];
+        $players[] = $row;
     }
+    $mysqli->close();
+    return $players;
+}
+
+function updatePlayer($data){
+    include 'connect.php';
+    $sql = "UPDATE players SET birthdate = '".$data['birthdate']."', 
+        height = '".$data['height']."', 
+        weight = '".$data['weight']."'
+        WHERE source_id = '".$data['player_id']."'";
+    //print $sql;
+    $result = $mysqli->query($sql);
+    $mysqli->close();
+    // check to see if the row was updated
+    if($result){
+        return 0;
+    }else{
+        return 1;
+    }
+}
+
+function countPlayersWithoutBday(){
+    include "connect.php";
+    $sql = "SELECT COUNT(*) as count FROM players WHERE birthdate = 0 AND position != 'DEF'";
+    $result = $mysqli->query($sql);
+    while($row = $result->fetch_assoc()){
+        $players = $row['count'];
+    };
     $mysqli->close();
     return $players;
 }
