@@ -1,9 +1,15 @@
 <?php
-header('Content-Type: application/json');
+// change to enable/disable debug mode
+$debug = true;
+
+// set header
+if (!$debug){
+    header('Content-type: application/json');
+}
 include 'connect.php';
 include 'functions.php';
 
-$debug = false;
+
 $failed_ts = false;
 
 # lets try to use curl to get the JSON our function

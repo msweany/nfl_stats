@@ -18,17 +18,32 @@
     <button id="update_mfl_injuries" class="btn btn-primary top-btns">Update MFL Injuries</button>
     <button id="update_player_info" class="btn btn-primary top-btns">Update Player Info</button>
     <button id="update_player_points" class="btn btn-primary top-btns">Update Player Points</button>
+    <button id="update_calc_stats" class="btn btn-primary top-btns">Update Calc</button>
   </div>
   <hr >
  
   <div class="loading text-center fs-2"><i class="fa fa-spinner fa-spin" aria-hidden="true"></i>  Loading...</div>
   <div class="row">
     <div id="games" class="col">
+      <h3>Flow</h3>
       <ul>
         <li>MFL Player Update runs daily 4AM</li>
         <li>If there are any mismatches, it'll tell you here</li>
         <li>MFL Injury Update runs daily 5AM</li>
         <li>Check games will hit the schedule and see if there are any games that need to be pulled in</li>
+      </ul>
+      <h3>Actions</h3>
+      <ul>
+        <li><strong>Check Games</strong> - Pulls in games from the schedule
+          <ul>
+            <li><strong>Update Games</strong> - Uses the schedule to update the individual games</li>
+          </ul>
+        </li>
+        <li><strong>Update MFL Players</strong> - Pulls in players from MFL and updates the players table</li>
+        <li><strong>Update MFL Injuries</strong> - Pulls in injuries from MFL and updates the injuries table</li>
+        <li><strong>Update Player Info</strong> - Pulls in player details (bday etc.)</li>
+        <li><strong>Update Player Points</strong> - Calcualtes points based of FD scoring system</li>
+        <li><strong>Update Calc</strong> - Formats data for the calc_ tables (Position Offense Stats and Defense Position performance)</li>
       </ul>
     </div>
     <div id="logs" class="col-3"></div>
@@ -50,6 +65,8 @@
   <script src="js/mflinjuries.js"></script><!-- JS file -->
   <script src="js/playerinfo.js"></script><!-- JS file -->
   <script src="js/processpoints.js"></script><!-- JS file -->
+  <script src="js/sendpoints.js"></script><!-- JS file -->
+  <script src="js/updatecalc.js"></script><!-- JS file -->
   <script src="js/logging.js"></script><!-- JS file -->
   
   <script>
