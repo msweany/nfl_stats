@@ -1,5 +1,5 @@
 <?php 
-include 'connect.php';
+#include 'connect.php';
 
 $tables = array('teams', 'games', 'game_info', 'game_stats', 'players', 
                 'player_snap_counts', 'player_stats_adv_defense', 'player_stats_adv_passing', 

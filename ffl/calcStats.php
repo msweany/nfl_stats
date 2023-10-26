@@ -1,6 +1,6 @@
 <?php
 // change to enable/disable debug mode
-$debug = true;
+$debug = false;
 
 // set header
 if (!$debug){
@@ -28,6 +28,7 @@ function getGame($game_id){
     return $game;
 }
 function addStatsOff($s){
+    global $debug;
     include '../api/connect.php';
     $sql = "INSERT INTO calc_data_off VALUES(null,
         '".$s['game_id']."',
@@ -68,6 +69,7 @@ function addStatsOff($s){
 }
 
 function addStatsDef($s){
+    global $debug;
     include '../api/connect.php';
     $sql = "INSERT INTO calc_data_def VALUES(null,
         '".$s['game_id']."',
@@ -82,7 +84,7 @@ function addStatsDef($s){
         '".$s['qb_hits']."',
         '".$s['fum_rec']."',
         '".$s['fum_td']."',
-        '".$s['forced_fum']."'
+        '".$s['forced_fum']."',0,0,0,0,0,0
     ) ON DUPLICATE KEY UPDATE
         interception = '".$s['interception']."',
         int_yds = '".$s['int_yds']."',
@@ -100,11 +102,13 @@ function addStatsDef($s){
 }
 
 function addStatsTeamDef($s){
+    global $debug;
     include "../api/connect.php";
-    $sql = "INSERT INTO calc_data_def_team VALUES(null,
+    $sql = "INSERT INTO calc_data_def VALUES(null,
         '".$s['game_id']."',
         '".$s['team']."',
         '".$s['opponent']."',
+        'DEF',0,0,0,0,0,0,0,0,0,
         '".$s['points_against']."',
         '".$s['safety']."',
         '".$s['blocked_fg']."',
