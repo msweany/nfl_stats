@@ -210,10 +210,17 @@ foreach($player_points as $key => $val){
 
 $rank = 1; // Initialize the counter before the loop
 foreach($approved as $pos){
-    # sort the array by points ASC
-    usort($$pos, function($a, $b) {
-        return $a['points'] - $b['points']; // Compare 'points' in ascending order
-    });
+    if($pos == 'DEF'){
+        # sort DESC
+        usort($$pos, function($a, $b) {
+            return $b['points'] - $a['points']; // Compare 'points' in desc order
+        });
+    }else{
+        # sort the array by points ASC
+        usort($$pos, function($a, $b) {
+            return $a['points'] - $b['points']; // Compare 'points' in ascending order
+        });
+    }
 
     foreach ($$pos as $player) {
         $player['rank']=$rank;
