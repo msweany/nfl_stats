@@ -1,5 +1,3 @@
-//////////////////////WORIKIN ON THIS/////////////////////////
-
 // check to see if there are game that need points updated
 var calcUpdate = [];
 function checkStats(){

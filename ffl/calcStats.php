@@ -8,126 +8,18 @@ if (!$debug){
 }
 # get the game id and save all the info for it
 $game_id = $_GET['game'];
+$game_id = '202310230min';
+
+include '../api/connect.php';
+
+######################################  functions  ######################################
+include 'functions.php';
 $game_info = getGame($game_id);
 if($debug){
     echo '<pre>';
     print_r($game_info);
     echo '</pre>';
 }
-include '../api/connect.php';
-
-######################################  functions  ######################################
-function getGame($game_id){
-    include '../api/connect.php';
-    $sql = "SELECT * FROM games WHERE game_id = '".$game_id."'";
-    $result = $mysqli->query($sql);
-    while ($row = $result->fetch_assoc()) {
-        $game = $row;
-    }
-    $mysqli->close();
-    return $game;
-}
-function addStatsOff($s){
-    global $debug;
-    include '../api/connect.php';
-    $sql = "INSERT INTO calc_data_off VALUES(null,
-        '".$s['game_id']."',
-        '".$s['team']."',
-        '".$s['opponent']."',
-        '".$s['position']."',
-        '".$s['pass_yds']."',
-        '".$s['pass_td']."',
-        '".$s['interception']."',
-        '".$s['rush_yds']."',
-        '".$s['rush_tds']."',
-        '".$s['rec_yds']."',
-        '".$s['rec_td']."', 
-        '".$s['rec_rec']."',
-        '".$s['fmb']."',
-        '".$s['fmb_lost']."',
-        '".$s['pass_two_point']."',
-        '".$s['rush_two_point']."',
-        '".$s['rec_two_point']."'
-    ) ON DUPLICATE KEY UPDATE
-        pass_yds = '".$s['pass_yds']."',
-        pass_td = '".$s['pass_td']."',
-        interception = '".$s['interception']."',
-        rush_yds = '".$s['rush_yds']."',
-        rush_tds = '".$s['rush_tds']."',
-        rec_yds = '".$s['rec_yds']."',
-        rec_td = '".$s['rec_td']."',
-        rec_rec = '".$s['rec_rec']."',
-        fmb = '".$s['fmb']."',
-        fmb_lost = '".$s['fmb_lost']."',
-        pass_two_point = '".$s['pass_two_point']."',
-        rush_two_point = '".$s['rush_two_point']."',
-        rec_two_point = '".$s['rec_two_point']."'
-    ";
-    if($debug){ echo $sql."<br/ >"; }
-    $result = $mysqli->query($sql);
-    $mysqli->close();
-}
-
-function addStatsDef($s){
-    global $debug;
-    include '../api/connect.php';
-    $sql = "INSERT INTO calc_data_def VALUES(null,
-        '".$s['game_id']."',
-        '".$s['team']."',
-        '".$s['opponent']."',
-        '".$s['position']."',
-        '".$s['interception']."',
-        '".$s['int_yds']."',
-        '".$s['int_td']."',
-        '".$s['solo_tackles']."',
-        '".$s['tackles_for_loss']."',
-        '".$s['qb_hits']."',
-        '".$s['fum_rec']."',
-        '".$s['fum_td']."',
-        '".$s['forced_fum']."',0,0,0,0,0,0
-    ) ON DUPLICATE KEY UPDATE
-        interception = '".$s['interception']."',
-        int_yds = '".$s['int_yds']."',
-        int_td = '".$s['int_td']."',
-        solo_tackles = '".$s['solo_tackles']."',
-        tackles_for_loss = '".$s['tackles_for_loss']."',
-        qb_hits = '".$s['qb_hits']."',
-        fum_rec = '".$s['fum_rec']."',
-        fum_td = '".$s['fum_td']."',
-        forced_fum = '".$s['forced_fum']."'
-    ";
-    if($debug){ echo $sql."<br/ >"; }
-    $result = $mysqli->query($sql);
-    $mysqli->close();
-}
-
-function addStatsTeamDef($s){
-    global $debug;
-    include "../api/connect.php";
-    $sql = "INSERT INTO calc_data_def VALUES(null,
-        '".$s['game_id']."',
-        '".$s['team']."',
-        '".$s['opponent']."',
-        'DEF',0,0,0,0,0,0,0,0,0,
-        '".$s['points_against']."',
-        '".$s['safety']."',
-        '".$s['blocked_fg']."',
-        '".$s['blocked_punt']."',
-        '".$s['blocked_fg_td']."',
-        '".$s['blocked_punt_td']."'
-    ) ON DUPLICATE KEY UPDATE
-        points_against = '".$s['points_against']."',
-        safety = '".$s['safety']."',
-        blocked_fg = '".$s['blocked_fg']."',
-        blocked_punt = '".$s['blocked_punt']."',
-        blocked_fg_td = '".$s['blocked_fg_td']."',
-        blocked_punt_td = '".$s['blocked_punt_td']."'
-    ";
-    if($debug){ echo $sql."<br/ >"; }
-    $result = $mysqli->query($sql);
-    $mysqli->close();
-}
-
 ######################################  start offense  ######################################
 # get offense data
 $sql = " SELECT *, t1.team as team FROM player_stats_offense t1
@@ -138,6 +30,11 @@ while($row = $result->fetch_assoc()) {
     // combine the results by team and poisition and add up all the stats per position
     $players[$row['team']][$row['position']][] = $row;
     
+}
+if($debug){
+    print '<pre>';
+    print_r($players);
+    print '</pre>';
 }
 
 // add up all the stats per position per team
@@ -197,6 +94,11 @@ while($row = $result->fetch_assoc()) {
     
 }
 
+if($debug){
+    print '<pre>';
+    print_r($players);
+    print '</pre>';
+}
 // add up all the stats per position per team
 foreach($players as $team => $positions) {
     foreach($positions as $position => $players) {

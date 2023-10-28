@@ -744,6 +744,8 @@ if(isset($_GET['game'])){
                 [forced_fum] => 0
             )
     */
+
+    //// add sacks!!!!!!!!!!!!!!!!!!!!!
     foreach($data['defense'] as $stat){
         $stat['team'] = teamMap($stat['team']);
         # get the player id ready for insert (remove any ')
