@@ -249,12 +249,11 @@ function addRank($s){
 }
 
 function addRankSummary($s){
-    printPretty($s);
     include "../api/connect.php";
         $sql = "INSERT INTO rank_summary VALUES(null,
         '".$s['team']."',
         '".$s['season']."',
-        '".$s['week']."',
+        '".$s['category']."',
         '".$s['position']."',
         '".$s['points']."',
         '".$s['rank']."'
@@ -262,7 +261,6 @@ function addRankSummary($s){
         points = '".$s['points']."',
         ranking = '".$s['rank']."'
     ";  
-    printDebugSQL($sql,"addRankSummary");  
     $mysqli->query($sql);
     $mysqli->close();
 }

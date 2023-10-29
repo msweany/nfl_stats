@@ -1,20 +1,17 @@
 <?php
 header('Content-Type: application/json');
-$week = 7;
+
 # lets get the data for this week
 include '../api/connect.php';
-$sql = "SELECT t1.points,t3.week,t2.mfl_id FROM `players_points` t1
-    LEFT JOIN players t2 ON t1.player_id=t2.id
-    LEFT JOIN games t3 ON t3.game_id=t1.game_id
-    WHERE t3.week=$week AND t3.season='2023'";
+$sql = "SELECT * FROM rank_summary";
 $result = $mysqli->query($sql);
 while($row = $result->fetch_assoc()){
-    $players[] = $row;
+    $ranks[] = $row;
 }
 
-$test = array('token' => getenv('FFL_TOKEN'),'players' => $players);
+$test = array('token' => getenv('FFL_TOKEN'),'ranks' => $ranks);
 
-$url = 'http://app.fozzil.net/ffl/common/receive-points.php';
+$url = 'http://app.fozzil.net/ffl/common/receive-ranks.php';
 $ch = curl_init($url);
 
 

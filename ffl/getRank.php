@@ -3,7 +3,7 @@ $debug = false;
 
 // json header
 if(!$debug) {
-    #header('Content-type: application/json');
+    header('Content-type: application/json');
 }
 $output = array();
 include '../api/connect.php';
@@ -247,20 +247,20 @@ while($row = $result->fetch_assoc()) {
         $row2['position'] = $position;
         $row2['category'] = 'season';
         $row2['season'] = $year_in;
-        $row2['points'] = ROUND($row2['points'],2);
         $player_points[] = $row2;
         //printPretty($row2);
         //addRankSummary($row2);
     }
 
-    # get the last 4 games trend
+    $trend_count = 4;
+    # get the last $trend_count games trend
     $sql = "SELECT COUNT(*) as games, SUM(points) as total_points, (SUM(points)/COUNT(*)) as points
         FROM (
             SELECT *
             FROM `rank_points`
             WHERE team='".$row['team']."' AND position='".$row['position']."'
             ORDER BY week DESC
-            LIMIT 4
+            LIMIT $trend_count
         ) AS subquery;";
     $result3 = $mysqli->query($sql);
     while($row3 = $result3->fetch_assoc()) {
@@ -268,7 +268,6 @@ while($row = $result->fetch_assoc()) {
         $row3['position'] = $position;
         $row3['category'] = 'trending';
         $row3['season'] = $year_in;
-        $row3['points'] = ROUND($row3['points'],2);
         $player_points[] = $row3;
         //printPretty($row3);
     }
@@ -301,36 +300,59 @@ foreach($player_points as $stats){
     } 
 }
 
-$rank = 1; // Initialize the counter before the loop
-foreach($approved as $pos){
-    foreach($$pos as $cat){
-
-        /*
-        if($cat == 'DEF'){
-            # sort DESC
-            usort($$pos, function($a, $b) {
-                return $b['points'] - $a['points']; // Compare 'points' in desc order
+foreach ($approved as $pos) {
+    foreach ($$pos as $key => &$cat) {
+        if($pos == 'DEF'){
+            // Sort the $cat array by 'points' key in descending order using a custom comparison function
+            usort($cat, function ($a, $b) {
+                if (abs($a['points'] - $b['points']) < 0.000001) {
+                    return 0;
+                }
+                return ($a['points'] < $b['points']) ? 1 : -1;
             });
         }else{
-            # sort the array by points ASC
-            usort($$pos, function($a, $b) {
-                return $a['points'] - $b['points']; // Compare 'points' in ascending order
+            // Sort the $cat array by 'points' key in ascending order using a custom comparison function
+            usort($cat, function ($a, $b) {
+                if (abs($b['points'] - $a['points']) < 0.000001) {
+                    return 0;
+                }
+                return ($b['points'] < $a['points']) ? 1 : -1;
             });
         }
-
-        foreach ($$pos as $player) {
-            $player['rank']=$rank;
-            printPretty($player);
-            //addRank($player);
+        $rank = 1; // Initialize the counter before the loop
+        foreach ($cat as $stats){
+            $stats['rank'] = $rank;
+            addRankSummary($stats);
             $rank++;
         }
-        $rank = 1; // Reset the counter for the next position
-        */
-    } 
+        
+        
+    }
 }
 
-// /printPretty($player_points);
+######################################  send to app.fozzil.net ###########################################
+$sql = "SELECT * FROM rank_summary";
+$result = $mysqli->query($sql);
+while($row = $result->fetch_assoc()){
+    $ranks[] = $row;
+}
 
+$send_this = array('token' => getenv('FFL_TOKEN'),'ranks' => $ranks);
+
+$url = 'http://app.fozzil.net/ffl/common/receive-ranks.php';
+$ch = curl_init($url);
+
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($send_this));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$result = curl_exec($ch);
+curl_close($ch);
+
+# now we have the JSON in $result, let's decode it into an array
+$data = json_decode($result, true);
+
+$output['send_data']= $data['status'];
 $output['status'] = 100;
 $output['message']= 'All players ranked';
 $output['week']= $week_in;
