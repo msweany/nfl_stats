@@ -3,7 +3,7 @@ $debug = false;
 
 // json header
 if(!$debug) {
-    header('Content-type: application/json');
+    #header('Content-type: application/json');
 }
 $output = array();
 include '../api/connect.php';
@@ -13,7 +13,6 @@ $week_in = $_GET['week'];
 $year_in = $_GET['year'];
 
 $games_season = getSeasonGames($year_in,$week_in);
-
 $player_points = array();
 # break up to each week
 foreach($games_season as $game_id){
@@ -230,6 +229,107 @@ foreach($approved as $pos){
     $rank = 1; // Reset the counter for the next position
 }
 
+##################################  RANK SUMMARY ###########################################
+$year_in = '2023';
+$player_points = array();
+// get all the team/position combos
+$sql = "SELECT team, position FROM rank_points GROUP BY team, position;";
+$result = $mysqli->query($sql);
+while($row = $result->fetch_assoc()) {
+    // we need these later
+    $team = $row["team"];
+    $position = $row["position"];
+    # get the season summary
+    $sql = "SELECT COUNT(*) as games, SUM(points) as total_points, (SUM(points)/COUNT(*)) as points FROM `rank_points` WHERE team='".$row['team']."' AND position='".$row['position']."';";
+    $result2 = $mysqli->query($sql);
+    while($row2 = $result2->fetch_assoc()) {
+        $row2['team'] = $team;
+        $row2['position'] = $position;
+        $row2['category'] = 'season';
+        $row2['season'] = $year_in;
+        $row2['points'] = ROUND($row2['points'],2);
+        $player_points[] = $row2;
+        //printPretty($row2);
+        //addRankSummary($row2);
+    }
+
+    # get the last 4 games trend
+    $sql = "SELECT COUNT(*) as games, SUM(points) as total_points, (SUM(points)/COUNT(*)) as points
+        FROM (
+            SELECT *
+            FROM `rank_points`
+            WHERE team='".$row['team']."' AND position='".$row['position']."'
+            ORDER BY week DESC
+            LIMIT 4
+        ) AS subquery;";
+    $result3 = $mysqli->query($sql);
+    while($row3 = $result3->fetch_assoc()) {
+        $row3['team'] = $team;
+        $row3['position'] = $position;
+        $row3['category'] = 'trending';
+        $row3['season'] = $year_in;
+        $row3['points'] = ROUND($row3['points'],2);
+        $player_points[] = $row3;
+        //printPretty($row3);
+    }
+}
+
+
+# create arrays for each position
+$QB = array();
+$RB = array();  
+$WR = array();
+$TE = array();
+$DEF = array();
+# save the points to the DB
+$approved = array("QB","RB","WR","TE","DEF");
+foreach($player_points as $stats){
+    # add these to the db if they are one of the approved positions
+    if(in_array($stats["position"], $approved)){
+        # add them to the correct array based on position
+        if($stats["position"] == "QB"){
+            $QB[$stats['category']][] = $stats;
+        } elseif($stats["position"] == "RB"){
+            $RB[$stats['category']][] = $stats;
+        } elseif($stats["position"] == "WR"){
+            $WR[$stats['category']][] = $stats;
+        } elseif($stats["position"] == "TE"){
+            $TE[$stats['category']][] = $stats;
+        } elseif($stats["position"] == "DEF"){
+            $DEF[$stats['category']][] = $stats;
+        }
+    } 
+}
+
+$rank = 1; // Initialize the counter before the loop
+foreach($approved as $pos){
+    foreach($$pos as $cat){
+
+        /*
+        if($cat == 'DEF'){
+            # sort DESC
+            usort($$pos, function($a, $b) {
+                return $b['points'] - $a['points']; // Compare 'points' in desc order
+            });
+        }else{
+            # sort the array by points ASC
+            usort($$pos, function($a, $b) {
+                return $a['points'] - $b['points']; // Compare 'points' in ascending order
+            });
+        }
+
+        foreach ($$pos as $player) {
+            $player['rank']=$rank;
+            printPretty($player);
+            //addRank($player);
+            $rank++;
+        }
+        $rank = 1; // Reset the counter for the next position
+        */
+    } 
+}
+
+// /printPretty($player_points);
 
 $output['status'] = 100;
 $output['message']= 'All players ranked';

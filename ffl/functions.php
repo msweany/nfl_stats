@@ -247,3 +247,22 @@ function addRank($s){
     $mysqli->query($sql);
     $mysqli->close();
 }
+
+function addRankSummary($s){
+    printPretty($s);
+    include "../api/connect.php";
+        $sql = "INSERT INTO rank_summary VALUES(null,
+        '".$s['team']."',
+        '".$s['season']."',
+        '".$s['week']."',
+        '".$s['position']."',
+        '".$s['points']."',
+        '".$s['rank']."'
+    ) ON DUPLICATE KEY UPDATE
+        points = '".$s['points']."',
+        ranking = '".$s['rank']."'
+    ";  
+    printDebugSQL($sql,"addRankSummary");  
+    $mysqli->query($sql);
+    $mysqli->close();
+}
