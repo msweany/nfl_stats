@@ -33,8 +33,8 @@ function updateStats(game_id){
 }
 
 $(document).on("click", "#update_calc_stats", function(){
-    //console.log("clicked update player points");
-    //console.log(calcUpdate);
+    console.log("clicked update calc");
+    console.log(calcUpdate);
     $("#games").html("<h2>Updating Calc Stats <span id='updating_player_points'></span></h2>");
     // loop through calcUpdate array and create a table to show the games that are being updated
     $("#games").append("<table class='table table-striped table-sm'><thead><tr><th>Game ID</th><th>Home</th><th>Away</th><th>Week</th><th>Season</th><th>Date</th></tr></thead><tbody id='games_list'></tbody></table>");

@@ -8,7 +8,7 @@ if (!$debug){
 }
 # get the game id and save all the info for it
 $game_id = $_GET['game'];
-$game_id = '202310230min';
+#$game_id = '202310230min';
 
 include '../api/connect.php';
 
@@ -35,6 +35,18 @@ if($debug){
     print '<pre>';
     print_r($players);
     print '</pre>';
+}
+
+# get the game stats for these teams
+# get more game info
+$sql = "SELECT * FROM game_stats WHERE game_id='".$game."'";    
+$result = $mysqli->query($sql);
+while ($row = $result->fetch_assoc()) {
+    if($debug){
+        echo '<pre>';
+        print_r($row);
+        echo '</pre>';
+    } 
 }
 
 // add up all the stats per position per team
@@ -70,7 +82,7 @@ foreach($players as $team => $positions) {
 
 foreach($stats[$game_info['away']] as $k => $s){
     $s['position'] = $k;
-    if($debug){ print_r($s); }
+    if($debug){ printDebug($s,'add this'); }
     addStatsOff($s);
 }
 foreach($stats[$game_info['home']] as $k => $s){

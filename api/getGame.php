@@ -1,6 +1,6 @@
 <?php
 // change to enable/disable debug mode
-$debug = true;
+$debug = false;
 
 // set header
 if (!$debug){

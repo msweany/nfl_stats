@@ -15,7 +15,7 @@ while($row = $result->fetch_assoc()) {
 
 
 # loop through all the games and check if they have been saved
-$sql = "SELECT * FROM games";
+$sql = "SELECT * FROM games WHERE game_synced != 0";
 $result = $mysqli->query($sql);
 while($row = $result->fetch_assoc()) {
     $game_id = $row;
