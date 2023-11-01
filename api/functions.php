@@ -13,7 +13,7 @@ function teamMap($team){
     # check to see if this is an alt team name
     $team = teamAlt($team);
     include 'connect.php';
-    $sql = "SELECT abbr FROM `teams` WHERE (`team` = '$team' OR orig_abbr = '$team')";
+    $sql = "SELECT abbr FROM `teams` WHERE (`team` = '$team' OR orig_abbr = '$team' OR `team` LIKE '%$team%')";
     $result = $mysqli->query($sql);
     //print $sql;
     # if there is no match, return the original team name
@@ -244,4 +244,66 @@ function countPlayersWithoutBday(){
     };
     $mysqli->close();
     return $players;
+}
+
+function getOdds($game_id){
+    $base_url = "https://ffl-stuff.azurewebsites.net/api/getOdds?code=".getenv('FFL_API_KEY')."&game=";
+    $url = $base_url.$game_id;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+    # now we have the JSON in $result, let's decode it into an array
+    $data = json_decode($result, true);
+    $data['game_id'] = $game_id;
+    # now we have the JSON in $result, let's decode it into an array
+    return $data;
+}
+
+function saveOdds($data){
+    include 'connect.php';
+    $sql = "INSERT INTO odds VALUES(null,
+        '".$data['game_id']."',
+        '".$data['favorite']."',
+        '".$data['spread']."',
+        '".$data['over_under']."',
+        '".time()."'
+    ) ON DUPLICATE KEY UPDATE 
+        favorite = '".$data['favorite']."',
+        line = '".$data['spread']."',
+        over_under = '".$data['over_under']."',
+        timestamp = '".time()."'
+    ";
+    $mysqli->query($sql);
+    $mysqli->close();
+}
+
+function sendOdds($timestamp){
+    include 'connect.php';
+    // get all records within a minute of the timestamp
+    $sql = "SELECT t2.week,t2.season,t2.home,t2.away,t1.favorite,t1.line,t1.over_under FROM `odds` t1
+        LEFT JOIN games t2 ON t1.game_id=t2.game_id
+        WHERE t1.timestamp > ($timestamp - 60)";
+    $result = $mysqli->query($sql);
+    while($row = $result->fetch_assoc()){
+        $odds[] = $row;
+    }
+    $mysqli->close();
+
+    $headers = array('token' => getenv('FFL_TOKEN'),'odds' => $odds);
+    $url = 'http://app.fozzil.net/ffl/common/receive-odds.php';
+    $ch = curl_init($url);
+
+
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($headers));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+    $data = json_decode($result, true);
+    
+    return $data;
 }
